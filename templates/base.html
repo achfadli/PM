@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Versatile Web App{% endblock %}</title>
+
+    <!-- SEO and Social Media Meta Tags -->
+    <meta name="description" content="Versatile Web Application with Dynamic Theming">
+    <meta name="keywords" content="web app, theme switcher, responsive design">
+    <meta property="og:title" content="Versatile Web App">
+    <meta property="og:description" content="A versatile web application with dynamic theming">
+    <meta property="og:url" content="https://yourwebsite.com">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Favicon and App Icon -->
+{#    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">#}
+{#    <link rel="manifest" href="{% static 'manifest.json' %}">#}
+    <meta name="theme-color" content="#3498db">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@400;700&family=Courier+Prime&display=swap" rel="stylesheet">
+
+    <!-- Animate.css -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+    <!-- Custom Themes and Global Styling -->
+    <style id="theme-styles">
+        /* CSS Variables and Theme Definitions */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --text-color: #333;
+            --bg-color: #f4f4f4;
+            --accent-color: #d4af37;
+        }
+
+        /* Theme Variations */
+        .theme-cyberpunk {
+            --primary-color: #00ff00;
+            --secondary-color: #0c0c0c;
+            --text-color: #00ff00;
+            --bg-color: #0c0c0c;
+            --accent-color: #ff00ff;
+            font-family: 'Courier Prime', monospace;
+        }
+
+        .theme-modern {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --text-color: #2c3e50;
+            --bg-color: #ecf0f1;
+            --accent-color: #e74c3c;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .theme-classic {
+            --primary-color: #4a4a4a;
+            --secondary-color: #d4af37;
+            --text-color: #333;
+            --bg-color: #f4f4f4;
+            --accent-color: #6c757d;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Universal Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar Styling */
+        .navbar-theme {
+            background-color: rgba(var(--primary-color), 0.1) !important;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .nav-link {
+            color: var(--text-color) !important;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            transform: scale(1.05);
+        }
+
+        /* Page Loader */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--primary-color);
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Scroll Progress */
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            width: 0;
+            background-color: var(--primary-color);
+            z-index: 1200;
+            transition: width 0.2s ease;
+        }
+
+        /* Theme Switcher */
+        .theme-switcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-switch-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--text-color);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-switch-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .cyberpunk-btn { background-color: #00ff00; }
+        .modern-btn { background-color: #3498db; }
+        .classic-btn { background-color: #4a4a4a; }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .theme-switcher {
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        /* Additional Responsive Styles */
+        main {
+            flex-grow: 1;
+            padding-top: 80px;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="theme-modern">
+    <!-- Page Loader -->
+    <div id="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress"></div>
+
+    <!-- Notification Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="notification-container"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-theme fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-code"></i> Versatile App
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+                        <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+{#                        <a class="nav-link" href="{% url 'about' %}">About</a>#}
+{#                    </li>#}
+{#                    <li class="nav-item dropdown">#}
+{#                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">#}
+{#                            Services#}
+{#                        </a>#}
+{#                        <ul class="dropdown-menu">#}
+{#                            <li><a class="dropdown-item" href="{% url 'services' %}">All Services</a></li>#}
+{#                            <li><a class="dropdown-item" href="{% url 'pricing' %}">Pricing</a></li>#}
+{#                        </ul>#}
+{#                    </li>#}
+                </ul>
+
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <img src="{{ user.profile.avatar.url }}" class="rounded-circle me-2" width="30" height="30">
+                                {{ user.username }}
+                            </a>
+{#                            <ul class="dropdown-menu dropdown-menu-end">#}
+{#                                <li><a class="dropdown-item" href="{% url 'profile' %}">#}
+{#                                    <i class="fas fa-user me-2"></i>Profile#}
+{#                                </a></li>#}
+{#                                <li><a class="dropdown-item" href="{% url 'settings' %}">#}
+{#                                    <i class="fas fa-cog me-2"></i>Settings#}
+{#                                </a></li>#}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary me-2" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-primary" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switcher">
+        <div 
+            class="theme-switch-btn cyberpunk-btn" 
+            onclick="themeManager.changeTheme('cyberpunk')" 
+            title="Cyberpunk Theme">
+        </div>
+        <div 
+            class="theme-switch-btn modern-btn" 
+            onclick="themeManager.changeTheme('modern')" 
+            title="Modern Theme">
+        </div>
+        <div 
+            class="theme-switch-btn classic-btn" 
+            onclick="themeManager.changeTheme('classic')" 
+            title="Classic Theme">
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container-fluid flex-grow-1">
+        {% block content %}
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 animate__animated animate__fadeIn">
+                    Welcome to Versatile App
+                </h1>
+                <p class="lead">
+                    A powerful and flexible web application with dynamic theming
+                </p>
+            </div>
+        </div>
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>About Versatile App</h5>
+                    <p>A modern web application with dynamic theming and powerful features.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+{#                    <ul class="list-unstyled">#}
+{#                        <li><a href="{% url 'home' %}" class="text-light">Home</a></li>#}
+{#                        <li><a href="{% url 'about' %}" class="text-light">About</a></li>#}
+{#                        <li><a href="{% url 'contact' %}" class="text-light">Contact</a></li>#}
+{#                    </ul>#}
+                </div>
+                <div class="col-md-4">
+                    <h5>Connect With Us</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-light me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-light"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024 Versatile App. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS and Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Advanced Theme and Notification Management -->
+    <script>
+        // Theme Manager
+        const themeManager = {
+            currentTheme: 'modern',
+            themes: {
+                cyberpunk: {
+                    primaryColor: '#00ff00',
+                    secondaryColor: '#0c0c0c',
+                    textColor: '#00ff00',
+                    bgColor: '#0c0c0c',
+                    accentColor: '#ff00ff'
+                },
+                modern: {
+                    primaryColor: '#3498db',
+                    secondaryColor: '#2ecc71',
+                    textColor: '#2c3e50',
+                    bgColor: '#ecf0f1',
+                    accentColor: '#e74c3c'
+                },
+                classic: {
+                    primaryColor: '#4a4a4a',
+                    secondaryColor: '#d4af37',
+                    textColor: '#333',
+                    bgColor: '#f4f4f4',
+                    accentColor: '#6c757d'
+                }
+            },
+            
+            changeTheme(themeName) {
+                const theme = this.themes[themeName];
+                document.body.classList.remove(`theme-${this.currentTheme}`);
+                document.body.classList.add(`theme-${themeName}`);
+                
+                // Update CSS Variables
+                Object.entries(theme).forEach(([key, value]) => {
+                    document.documentElement.style.setProperty(`--${key}-color`, value);
+                });
+                
+                // Save theme preference
+                localStorage.setItem('app-theme', themeName);
+                this.currentTheme = themeName;
+            },
+
+            initTheme() {
+                const savedTheme = localStorage.getItem('app-theme') || 'modern';
+                this.changeTheme(savedTheme);
+            }
+        };
+
+        // Notification Manager
+        const notificationManager = {
+            show(message, type = 'info') {
+                const container = document.
+                                    getElementById('notification-container');
+                const toast = document.createElement('div');
+                
+                toast.classList.add('toast', `bg-${type}`, 'text-white');
+                toast.innerHTML = `
+                    <div class="toast-header">
+                        <strong class="me-auto">${type.toUpperCase()}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                `;
+                
+                container.appendChild(toast);
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+            }
+        };
+
+        // Page Load and Initialization Management
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Theme
+            themeManager.initTheme();
+
+            // Remove Page Loader
+            const loader = document.getElementById('page-loader');
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+
+            // Scroll Progress Tracking
+            window.addEventListener('scroll', () => {
+                const scrollProgress = document.getElementById('scroll-progress');
+                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollTop = window.scrollY;
+                const scrollPercent = (scrollTop / scrollHeight) * 100;
+                scrollProgress.style.width = `${scrollPercent}%`;
+            });
+
+            // Network Status Monitoring
+            window.addEventListener('online', () => {
+                notificationManager.show('You are back online', 'success');
+            });
+
+            window.addEventListener('offline', () => {
+                notificationManager.show('You are offline', 'warning');
+            });
+
+            // Performance and Error Monitoring
+            window.addEventListener('error', (event) => {
+                notificationManager.show(`Error: ${event.message}`, 'danger');
+                console.error('Unhandled error:', event);
+            });
+        });
+
+        // Performance Tracking
+        if ('performance' in window) {
+            window.addEventListener('load', () => {
+                const timing = window.performance.timing;
+                const loadTime = timing.loadEventEnd - timing.navigationStart;
+                console.log(`Page load time: ${loadTime}ms`);
+            });
+        }
+
+        // Expose managers to global scope
+        window.themeManager = themeManager;
+        window.notificationManager = notificationManager;
+    </script>
+
+    <!-- Dynamic Message Handling -->
+    {% if messages %}
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                {% for message in messages %}
+                    notificationManager.show('{{ message }}', '{{ message.tags }}');
+                {% endfor %}
+            });
+        </script>
+    {% endif %}
+
+    <!-- Optional Extra JavaScript Block -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

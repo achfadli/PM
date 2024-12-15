@@ -1,0 +1,26 @@
+body {
+    background-color: #f8f9fa;
+    color: #343a40;
+    font-family: Arial, sans-serif;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.slider {
+    width: 100%;
+    height: 300px;
+    background: url('https://via.placeholder.com/800x300') no-repeat center center/cover;
+    position: relative;
+}
+
+.slider h2 {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+}
