@@ -2,7 +2,9 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.utils import timezone
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinLengthValidator, MinValueValidator, MaxValueValidator
+from django.utils.text import slugify
+from django.urls import reverse
 
 
 class ProjectCategory(models.Model):
@@ -18,7 +20,8 @@ class ProjectCategory(models.Model):
     name = models.CharField(
         verbose_name=_('Category Name'),
         max_length=50,
-        unique=True
+        unique=True,
+        choices=CATEGORY_CHOICES
     )
     description = models.TextField(
         verbose_name=_('Description'),
@@ -27,15 +30,26 @@ class ProjectCategory(models.Model):
     )
     slug = models.SlugField(
         unique=True,
-        max_length=100
+        max_length=100,
+        blank=True
     )
 
+    def save(self, *args, **kwargs):
+        # Automatically generate slug if not provided
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('project_category_detail', kwargs={'slug': self.slug})
+
     def __str__(self):
-        return self.name
+        return self.get_name_display()
 
     class Meta:
         verbose_name = _('Project Category')
         verbose_name_plural = _('Project Categories')
+        ordering = ['name']
 
 
 class Project(models.Model):
@@ -58,6 +72,11 @@ class Project(models.Model):
         verbose_name=_('Project Title'),
         max_length=200,
         validators=[MinLengthValidator(5)]
+    )
+    slug = models.SlugField(
+        unique=True,
+        max_length=250,
+        blank=True
     )
     description = models.TextField(
         verbose_name=_('Project Description'),
@@ -136,6 +155,21 @@ class Project(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        # Automatically generate slug if not provided
+        if not self.slug:
+            self.slug = slugify(self.title)
+
+        # Validate dates
+        if self.start_date and self.end_date:
+            if self.start_date > self.end_date:
+                raise ValueError(_("End date must be after start date"))
+
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('project_detail', kwargs={'slug': self.slug})
+
     def __str__(self):
         return self.title
 
@@ -153,10 +187,22 @@ class Project(models.Model):
             return (self.end_date - self.start_date).days
         return None
 
+    def update_progress(self):
+        """
+        Update progress proyek berdasarkan task
+        """
+        tasks = self.tasks.all()
+        if tasks:
+            completed_tasks = tasks.filter(status='done').count()
+            total_tasks = tasks.count()
+            self.progress = (completed_tasks / total_tasks) * 100
+            self.save()
+
     class Meta:
         verbose_name = _('Project')
         verbose_name_plural = _('Projects')
         ordering = ['-created_at']
+        unique_together = ['title', 'owner']
 
 
 class ProjectTask(models.Model):
@@ -165,6 +211,13 @@ class ProjectTask(models.Model):
         ('in_progress', _('In Progress')),
         ('review', _('In Review')),
         ('done', _('Done'))
+    ]
+
+    PRIORITY_CHOICES = [
+        ('low', _('Low')),
+        ('medium', _('Medium')),
+        ('high', _('High')),
+        ('urgent', _('Urgent'))
     ]
 
     project = models.ForeignKey(
@@ -193,6 +246,12 @@ class ProjectTask(models.Model):
         choices=STATUS_CHOICES,
         default='todo'
     )
+    priority = models.CharField(
+        verbose_name=_('Task Priority'),
+        max_length=20,
+        choices=PRIORITY_CHOICES,
+        default='medium'
+    )
     due_date = models.DateField(
         verbose_name=_('Due Date'),
         null=True,
@@ -200,6 +259,12 @@ class ProjectTask(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        # Validate due date
+        if self.due_date and self.due_date < timezone.now().date():
+            raise ValueError(_("Due date cannot be in the past"))
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -214,3 +279,4 @@ class ProjectTask(models.Model):
         verbose_name = _('Project Task')
         verbose_name_plural = _('Project Tasks')
         ordering = ['due_date']
+        unique_together = ['title', 'project']  # Ensure task titles are unique within a project

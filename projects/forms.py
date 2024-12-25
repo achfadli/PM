@@ -1,80 +1,74 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+
 from .models import Project, ProjectTask, ProjectCategory
+
 
 class ProjectCategoryForm(forms.ModelForm):
     class Meta:
         model = ProjectCategory
-        fields = ['name', 'description', 'slug']
+        fields = ['name', 'description']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'name': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'slug': forms.TextInput(attrs={'class': 'form-control'})
         }
 
 
 class ProjectForm(forms.ModelForm):
+    team_members = forms.ModelMultipleChoiceField(
+        queryset=None,  # Akan diset di __init__
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control select2'})
+    )
+
     class Meta:
         model = Project
         fields = [
-            'title', 'description', 'category', 'status',
-            'priority', 'start_date', 'end_date',
-            'progress', 'budget', 'team_members'
+            'title',
+            'description',
+            'category',
+            'status',
+            'priority',
+            'start_date',
+            'end_date',
+            'budget',
+            'progress'
         ]
         widgets = {
-            'title': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': _('Enter project title')
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 4,
-                'placeholder': _('Describe your project')
-            }),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'priority': forms.Select(attrs={'class': 'form-control'}),
-            'start_date': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'end_date': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'progress': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': 0,
-                'max': 100
-            }),
-            'budget': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.01'
-            }),
-            'team_members': forms.SelectMultiple(attrs={
-                'class': 'form-control select2',
-                'multiple': 'multiple'
-            })
+            'start_date': forms.DateInput(attrs={'class': 'form-control datepicker', 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control datepicker', 'type': 'date'}),
+            'budget': forms.NumberInput(attrs={'class': 'form-control'}),
+            'progress': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 100})
         }
 
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        # Hanya menampilkan user yang terkait
+        if user:
+            self.fields['team_members'].queryset = user.get_all_users()  # Sesuaikan dengan method di User model
+
+        # Set initial untuk team_members jika sedang update
+        if self.instance.pk:
+            self.fields['team_members'].initial = self.instance.team_members.all()
+
     def clean(self):
-        """
-        Validasi khusus untuk form project
-        """
         cleaned_data = super().clean()
         start_date = cleaned_data.get('start_date')
         end_date = cleaned_data.get('end_date')
-        progress = cleaned_data.get('progress')
 
         # Validasi tanggal
         if start_date and end_date:
             if start_date > end_date:
-                raise forms.ValidationError(_("End date must be after start date"))
-
-        # Validasi progress
-        if progress is not None:
-            if progress < 0 or progress > 100:
-                raise forms.ValidationError(_("Progress must be between 0 and 100"))
+                raise ValidationError(_("End date must be after start date"))
 
         return cleaned_data
 
@@ -83,51 +77,41 @@ class ProjectTaskForm(forms.ModelForm):
     class Meta:
         model = ProjectTask
         fields = [
-            'project', 'title', 'description',
-            'assigned_to', 'status', 'due_date'
+            'title',
+            'description',
+            'assigned_to',
+            'status',
+            'priority',
+            'due_date'
         ]
         widgets = {
-            'project': forms.Select(attrs={'class': 'form-control'}),
-            'title': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': _('Enter task title')
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': _('Describe the task')
-            }),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'assigned_to': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
-            'due_date': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            })
+            'priority': forms.Select(attrs={'class': 'form-control'}),
+            'due_date': forms.DateInput(attrs={'class': 'form-control datepicker', 'type': 'date'})
         }
 
-    def clean(self):
-        """
-        Validasi khusus untuk form task
-        """
-        cleaned_data = super().clean()
-        project = cleaned_data.get('project')
-        due_date = cleaned_data.get('due_date')
+    def __init__(self, *args, **kwargs):
+        project = kwargs.pop('project', None)
+        super().__init__(*args, **kwargs)
 
-        # Validasi tanggal jatuh tempo sesuai dengan proyek
-        if project and due_date:
-            if project.start_date and due_date < project.start_date:
-                raise forms.ValidationError(_("Task due date must be after project start date"))
+        # Filter assigned_to berdasarkan project members
+        if project:
+            self.fields['assigned_to'].queryset = project.team_members.all()
 
-            if project.end_date and due_date > project.end_date:
-                raise forms.ValidationError(_("Task due date must be before or on project end date"))
+    def clean_due_date(self):
+        due_date = self.cleaned_data.get('due_date')
 
-        return cleaned_data
+        # Validasi tanggal jatuh tempo
+        if due_date and due_date < timezone.now().date():
+            raise ValidationError(_("Due date cannot be in the past"))
+
+        return due_date
 
 
 class ProjectSearchForm(forms.Form):
-    """
-    Form untuk pencarian dan filter project
-    """
     search_query = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
@@ -157,15 +141,30 @@ class ProjectSearchForm(forms.Form):
     start_date_from = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={
-            'class': 'form-control',
-            'type': 'date'
+            'class': 'form-control datepicker',
+            'type': 'date',
+            'placeholder': _('From Date')
         })
     )
 
     start_date_to = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={
-            'class': 'form-control',
-            'type': 'date'
+            'class': 'form-control datepicker',
+            'type': 'date',
+            'placeholder': _('To Date')
         })
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date_from = cleaned_data.get('start_date_from')
+        start_date_to = cleaned_data.get('start_date_to')
+
+        # Validasi rentang tanggal
+        if start_date_from and start_date_to:
+            if start_date_from > start_date_to:
+                raise ValidationError(_("From date must be before To date"))
+
+        return cleaned_data
+

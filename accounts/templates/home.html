@@ -1,1 +1,151 @@
-belum di buat home nya
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Varsetile Apps</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>body {
+    font-family: 'Arial', sans-serif;
+}
+
+.slider {
+    height: 60vh;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+footer {
+    padding: 20px 0;
+}</style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="navbar-fixed">
+        <nav class="blue-grey darken-3">
+            <div class="container">
+                <a href="#" class="brand-logo">Varsetile Apps</a>
+                <ul class="right hide-on-med-and-down">
+                    <li><a href="#features">Fitur</a></li>
+                    <li><a href="#about">Tentang</a></li>
+                    <li><a href="#contact">Kontak</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Slider Gambar -->
+    <div class="slider">
+        <ul class="slides">
+            <li>
+                <img src="https://source.unsplash.com/1600x900/?project,1" alt="Gambar 1"> <!-- Gambar 1 -->
+                <div class="caption center-align">
+                    <h3>Selamat Datang di Varsetile Apps</h3>
+                    <h5 class="light grey-text text-lighten-3">Solusi manajemen proyek terbaik untuk Anda.</h5>
+                </div>
+            </li>
+            <li>
+                <img src="https://source.unsplash.com/1600x900/?project,2" alt="Gambar 2"> <!-- Gambar 2 -->
+                <div class="caption left-align">
+                    <h3>Kolaborasi yang Efektif</h3>
+                    <h5 class="light grey-text text-lighten-3">Bekerja sama dengan tim Anda secara real-time.</h5>
+                </div>
+            </li>
+            <li>
+                <img src="https://source.unsplash.com/1600x900/?project,3" alt="Gambar 3"> <!-- Gambar 3 -->
+                <div class="caption right-align">
+                    <h3>Laporan yang Mendalam</h3>
+                    <h5 class="light grey-text text-lighten-3">Dapatkan laporan yang membantu Anda melacak kemajuan.</h5>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Fitur Section -->
+    <div id="features" class="container">
+        <h2 class="center">Fitur</h2>
+        <div class="row">
+            <div class="col s12 m4">
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Manajemen Tugas</span>
+                        <p>Atur dan prioritaskan tugas Anda dengan efisien.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m4">
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Kolaborasi</span>
+                        <p>Bekerja sama dengan tim Anda secara real-time.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m4">
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Pelaporan</span>
+                        <p>Hasilkan laporan yang mendalam untuk melacak kemajuan.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tentang Section -->
+    <div id="about" class="blue-grey lighten-5">
+        <div class="container">
+            <h2 class="center">Tentang Kami</h2>
+            <p>Varsetile Apps dir ancang untuk membantu tim mengelola proyek mereka dengan efektif. Tujuan kami adalah menyediakan platform yang ramah pengguna yang meningkatkan produktivitas dan kolaborasi.</p>
+        </div>
+    </div>
+
+    <!-- Kontak Section -->
+    <div id="contact" class="container">
+        <h2 class="center">Kontak Kami</h2>
+        <form>
+            <div class="input-field">
+                <input type="text" id="name" required>
+                <label for="name">Nama Anda</label>
+            </div>
+            <div class="input-field">
+                <input type="email" id="email" required>
+                <label for="email">Email Anda</label>
+            </div>
+            <div class="input-field">
+                <textarea id="message" class="materialize-textarea" required></textarea>
+                <label for="message">Pesan Anda</label>
+            </div>
+            <button type="submit" class="btn waves-effect waves-light">Kirim</button>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <footer class="page-footer blue-grey darken-3">
+        <div class="container">
+            <div class="row">
+                <div class="col s12 center-align">
+                    <h5 class="white-text">Varsetile Apps</h5>
+                    <p class="grey-text text-lighten-4">© 2024 Varsetile Apps. Semua hak dilindungi.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('.slider');
+            var instances = M.Slider.init(elems, {fullWidth: true, indicators: true});
+        });
+    </script>
+</body>
+</html>

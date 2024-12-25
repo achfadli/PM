@@ -3,6 +3,7 @@ import uuid
 from cProfile import Profile
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Group, Permission, User
 from django.core.mail import send_mail
 from django.core.validators import FileExtensionValidator, EmailValidator, RegexValidator
@@ -66,6 +67,13 @@ class CustomUser (AbstractBaseUser , PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def get_all_users(self):
+        """
+        Metode untuk mendapatkan semua user
+        """
+        return get_user_model().objects.all()
+
 
     def get_full_name(self):
         return f'{self.first_name} {self.last_name}'.strip() or self.email
